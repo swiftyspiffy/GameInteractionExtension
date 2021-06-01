@@ -13,7 +13,6 @@
 
 		<link href="style.css" rel="stylesheet">
 		<script src="script.js"></script>
-		<title>Burke's Game Integration</title>
 	</head>
 
 	<body>
@@ -33,11 +32,11 @@
 			</div>
 		</div>
 
-		<div id="landing" style="display: none;">
+		<div id="landing">
 			<div class="wrapper fadeInDown">
 				<div id="formContent">
 					<div class="fadeIn first">
-						<img src="assets/profile_picture_300.png" id="icon" width="75" />
+						<img id="profile_picture" src="assets/profile_picture_300.png" id="icon" width="75" />
 					</div>
 					<div id="loading-spinner" class="spinner-border text-secondary" role="status" style="display: none;">
 						<span class="sr-only">Loading...</span>
@@ -46,11 +45,11 @@
 				</div>
 			</div>
 		</div>
-		<div id="authed" style="">
+		<div id="authed" style="display: none;">
 			<div class="wrapper fadeInDown">
 				<div id="formContent">
 					<nav class="navbar navbar-expand-lg navbar-light bg-light">
-						<a class="navbar-brand" href="#" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
+						<a id="ext_title" class="navbar-brand" href="#" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
 							Game Integrations
 						</a>
 						<a href="#" data-toggle="collapse" data-target="#navbarSupportedContent"><img class="rounded-circle" src="https://static-cdn.jtvnw.net/jtv_user_pictures/swiftyspiffy-profile_image-a2ba67caa9635d4b-300x300.png" width="30" height="30" class="d-inline-block align-top"></a>
@@ -58,22 +57,17 @@
 						<div class="collapse navbar-collapse" id="navbarSupportedContent">
 							<ul class="navbar-nav mr-auto">
 								<li class="nav-item active">
-									<a class="nav-link" href="#">7 Days to Die <span class="sr-only">(current)</span></a>
+									<a class="nav-link" href="#"><span id="game_name"></span> <span class="sr-only">(current)</span></a>
 							  	</li>
 							</ul>
 						</div>
 					</nav>
 
 					<div class="jumbotron mt-3 jumbotron-condensed">
-						<div id="alert_success" class="alert alert-success" role="alert" style="display: none;">
-							This is placeholder text
-						</div>
-						<div id="alert_error" class="alert alert-danger" role="alert" style="display: none;">
-							This is placeholder text
-						</div>
+						<div id="alert-area"></div>
 						<div class="row">
 							<div class="col-sm">
-								<p class="h5">7 Days to Die [<img src="assets/credit.png" width="25" height="25" class="d-inline-block align-top">: 1000]</p>
+								<p class="h5"><span id="game_name"></span> [<img src="assets/credit.png" width="25" height="25" class="d-inline-block align-top">: 1000]</p>
 							</div>
 							<div class="col-sm">
 								
@@ -87,11 +81,11 @@
 								<th scope="col"></th>
 							  </tr>
 							</thead>
-							<tbody>
+							<tbody id="actions">
 							  <tr>
-								<td>Spawn Zombie <a href="#" onclick="showInfoDialog('Spawn Zombie', 'Spawn a zombie near Burke forcing him to either fight it or attempt to run away!')">[info]</a></td>
+								<td>Spawn Zombie Spawn Zombie <a href="#" onclick="showInfoDialog('Spawn Zombie', 'Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away!')">[info]</a></td>
 								<td>1</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+								<td><button type="button" class="btn btn-xs btn-success" onclick="alertSuccess('Feels good man :)');">Send</button></td>
 							  </tr>
 							  <tr>
 								<td>Weapon Drop <a href="#">[info]</a></td>
@@ -120,9 +114,9 @@
 							  </tr>
 							</tbody>
 						  </table>
-						  <button type="button" class="btn btn-xs btn-info">Previous</button>
-						  <button type="button" class="btn btn-xs btn-primary">Refresh</button>
-						  <button type="button" class="btn btn-xs btn-info">Next</button>
+						  <button id="pagination_prev" type="button" class="btn btn-xs btn-info disabled" disabled onclick="getPrevActions();">Previous</button>
+						  <button id="refresh_ui" type="button" class="btn btn-xs btn-primary" onclick="refresh();">Refresh</button>
+						  <button id="pagination_next" type="button" class="btn btn-xs btn-info" onclick="getNextActions();">Next</button>
 					  </div>
 				</div>
 			</div>
