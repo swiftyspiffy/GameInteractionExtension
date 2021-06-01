@@ -1,4 +1,6 @@
+const version = 1;
 const base_api = "https://burkeblack/extensions/game_interaction/api.php";
+
 var current_page = 1;
 var current_game_id = 0;
 var panel_token;
@@ -8,10 +10,27 @@ window.Twitch.ext.onAuthorized(function(auth) {
     var sections = auth.token.split('.');
     payload = JSON.parse(window.atob(sections[1]));
     if(payload.user_id) {
-        showAuthed();
+        refresh();
+        showAuthing();
     } else {
         showAuth();
     }
+});
+
+$(document).ready(function() {
+    platform = getPlatform(getUrlVars());
+    $('#login-button').click(function() {
+        window.Twitch.ext.actions.requestIdShare();
+    });
+    $('#pagination_prev').click(function() {
+        getPrevActions();
+    });
+    $('#refresh_ui').click(function() {
+        refresh();
+    });
+    $('#pagination_next').click(function() {
+        getNextActions();
+    });
 });
 
 function initializeConnector() {
@@ -22,12 +41,19 @@ function showAuth() {
     $('#authed').hide();
     $('#login-button').show();
     $('#loading-spinner').hide();
-    $('#auth').show();
+    $('#landing').show();
+}
+
+function showAuthing() {
+    $('#authed').hide();
+    $('#landing').show();
+    $('#login-button').hide();
+    $('#loading-spinner').show();
 }
 
 function showAuthed() {
-    $('#login-button').hide();
-    $('#loading-spinner').show();
+    $('#landing').hide();
+    $('#authed').show();
 }
 
 function showInfoDialog(title, description) {
@@ -40,16 +66,18 @@ function closeInfoDialog() {
     $('#modal-info').modal("hide");
 }
 
-function alertSuccess(msg) {
+function alertSuccess(msg, global = false) {
     newAlert('success', msg);
 }
 
-function alertError(msg) {
+function alertError(msg, global = false) {
     newAlert('danger', msg);
 }
 
-function newAlert (type, message) {
-    $("#alert-area").append($('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert"><span>' + message + '</span><button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> </div>'));
+function newAlert (type, message, global = false) {
+    var id = "alert-area";
+    if (global) { id = "alert-area-global"; }
+    $("#" + id).append($('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert"><span>' + message + '</span><button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> </div>'));
     setTimeout(function() {
         $(".alert").alert('close');
     }, 4000);
@@ -81,10 +109,10 @@ function getGameActionsCallback(response) {
     actions.forEach(action => {
         var name = action.name.replace(/'/g, "\\'");
         var description = action.description.replace(/'/g, "\\'");
-        var cost = action.cost;
+        var cost = action.cost; // we'll pass the cost so that if the cost changes without the user's knowledge, it will be rejected server side
         var action_code = action.action_code;
 
-        var rowHtml = '<tr> <td>' + action.name + ' <a href="#" onclick="showInfoDialog(\'' + name + '\', \'' + description + '\')">[info]</a></td> <td>' + cost + '</td> <td><button type="button" class="btn btn-xs btn-success" onclick="sendAction(' + game_id + ',\'' + action_code + '\');">Send</button></td> </tr>';
+        var rowHtml = '<tr> <td>' + action.name + ' <a href="#" onclick="showInfoDialog(\'' + name + '\', \'' + description + '\')">[info]</a></td> <td>' + cost + '</td> <td><button type="button" class="btn btn-xs btn-success" onclick="sendAction(' + game_id + ',\'' + action_code + '\', \'' + cost + '\');">Send</button></td> </tr>';
         $('#actions').append(rowHtml);
     });
     setPrev(hasPrevActions);
@@ -142,11 +170,53 @@ function refreshCallback(response) {
 }
 
 function getRequest(params, callback) {
-    $.get(base_api + params, function(data){
-        if (data.successful) {
-            callback(data.message);
-        } else {
-            alertError(data.message);
+    $.get({
+        url: base_api + params, 
+        type: 'GET',
+        headers: {
+            "x-extension-jwt": panel_token,
+            accept: "application/json",
+            version: version,
+            platform: platform,
+        },
+        success: function(data){
+            if (data.successful) {
+                callback(data.message);
+            } else {
+                alertError(data.message);
+            }
+        },
+        error: function(data) {
+            alertError("Server returned an invalid response!", true);
         }
     });
+}
+
+// source: https://stackoverflow.com/questions/4656843/jquery-get-querystring-from-url
+function getUrlVars()
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
+
+function getPlatform(queryStringArr) {
+	if(queryStringArr.hasOwnProperty("platform")) {
+		switch(queryStringArr["platform"]) {
+			case "mobile":
+				return "mobile";
+			case "web":
+				return "web";
+			default:
+				return "unknown";
+		}
+	} else {
+		return "not_set";
+	}
 }
