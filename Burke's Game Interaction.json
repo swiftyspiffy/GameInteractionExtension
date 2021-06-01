@@ -1,0 +1,109 @@
+{
+  "allowHttpBackend": false,
+  "backendCommand": "",
+  "backendFolderName": "",
+  "certificateExceptions": [],
+  "extensionViews": [
+    {
+      "channelId": "40876073",
+      "configurationAnchor": "panel",
+      "displayChannelName": "swiftyspiffy",
+      "features": {
+        "isBitsEnabled": true,
+        "isChatEnabled": true,
+        "isSubscriptionStatusAvailable": true
+      },
+      "frameSize": {
+        "width": 1280,
+        "height": 720
+      },
+      "id": "1",
+      "isPopout": false,
+      "label": "Panel Logged Out",
+      "linked": false,
+      "linkedUserId": "",
+      "orientation": "Portrait",
+      "type": "panel",
+      "viewerType": "Logged-Out Viewer"
+    },
+    {
+      "channelId": "40876073",
+      "configurationAnchor": "panel",
+      "displayChannelName": "swiftyspiffy",
+      "features": {
+        "isBitsEnabled": true,
+        "isChatEnabled": true,
+        "isSubscriptionStatusAvailable": true
+      },
+      "frameSize": {
+        "width": 375,
+        "height": 822
+      },
+      "id": "2",
+      "isPopout": false,
+      "label": "Logged Out Mobile",
+      "linked": false,
+      "linkedUserId": "",
+      "orientation": "Portrait",
+      "type": "mobile",
+      "viewerType": "Logged-Out Viewer"
+    }
+  ],
+  "manifest": {
+    "anchor": "panel",
+    "assetUrls": [],
+    "authorName": "swiftyspiffy",
+    "bitsEnabled": true,
+    "canInstall": true,
+    "configUrl": "https://localhost:8080/config.html",
+    "configurationLocation": "none",
+    "description": "This extension lets you interact with various select games that BurkeBlack is streaming. It will launch with support for 7 Days to Die.",
+    "eulaTosUrl": "https://burkeblack.tv",
+    "hasChatSupport": true,
+    "iconUrl": "",
+    "iconUrls": {},
+    "id": "46j5wbrm3pdnwprnsvcomfq3p6b07m",
+    "installationCount": -42,
+    "liveConfigUrl": "",
+    "name": "Burke's Game Interaction",
+    "panelHeight": 500,
+    "privacyPolicyUrl": "https://burkeblack.tv",
+    "requestIdentityLink": true,
+    "requiredBroadcasterAbilities": [],
+    "screenshotUrls": [],
+    "sku": "",
+    "state": "Testing",
+    "subscriptionsSupportLevel": "optional",
+    "summary": "Interact with select games that BurkeBlack plays via this extension. For exclusive use on BurkeBlack's channel.",
+    "supportEmail": "swiftyspiffy@gmail.com",
+    "vendorCode": "",
+    "version": "0.0.1",
+    "viewerSummary": "",
+    "viewerUrl": "https://localhost:8080/index.html",
+    "viewerUrls": {
+      "mobile": "https://localhost:8080/index.html",
+      "panel": "https://localhost:8080/index.html"
+    },
+    "views": {
+      "mobile": {
+        "viewerUrl": "https://localhost:8080/index.html"
+      },
+      "panel": {
+        "viewerUrl": "https://localhost:8080/index.html",
+        "height": 500,
+        "canLinkExternalContent": false
+      },
+      "config": {
+        "viewerUrl": "https://localhost:8080/config.html",
+        "canLinkExternalContent": false
+      }
+    },
+    "whitelistedConfigUrls": [],
+    "whitelistedPanelUrls": []
+  },
+  "frontendCommand": "",
+  "frontendFolderName": "frontend",
+  "name": "Burke's Game Interaction",
+  "usingRandomFrontendHostingPort": false,
+  "version": 3
+}

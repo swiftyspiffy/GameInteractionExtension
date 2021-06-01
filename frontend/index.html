@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="third_party/jquery-3.2.1.slim.min.js"></script>
+
+		<link rel="stylesheet" href="third_party/bootstrap.min.css">
+		<script src="third_party/bootstrap.min.js"></script>
+
+		<script src="third_party/popper.min.js"></script>
+
+		<link href="style.css" rel="stylesheet">
+		<script src="script.js"></script>
+		<title>Burke's Game Integration</title>
+	</head>
+
+	<body>
+		<div class="modal fade" tabindex="-1" role="dialog" id="modal-info">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modal-info-title"></h5>
+						<button type="button" class="close" onclick="closeInfoDialog();">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="modal-info-description"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="landing" style="display: none;">
+			<div class="wrapper fadeInDown">
+				<div id="formContent">
+					<div class="fadeIn first">
+						<img src="assets/profile_picture_300.png" id="icon" width="75" />
+					</div>
+					<div id="loading-spinner" class="spinner-border text-secondary" role="status" style="display: none;">
+						<span class="sr-only">Loading...</span>
+					</div>
+					<input id="login-button" type="submit" class="fadeIn fourth" value="Login" onclick="initializeConnector();">
+				</div>
+			</div>
+		</div>
+		<div id="authed" style="">
+			<div class="wrapper fadeInDown">
+				<div id="formContent">
+					<nav class="navbar navbar-expand-lg navbar-light bg-light">
+						<a class="navbar-brand" href="#" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
+							Game Integrations
+						</a>
+						<a href="#" data-toggle="collapse" data-target="#navbarSupportedContent"><img class="rounded-circle" src="https://static-cdn.jtvnw.net/jtv_user_pictures/swiftyspiffy-profile_image-a2ba67caa9635d4b-300x300.png" width="30" height="30" class="d-inline-block align-top"></a>
+						
+						<div class="collapse navbar-collapse" id="navbarSupportedContent">
+							<ul class="navbar-nav mr-auto">
+								<li class="nav-item active">
+									<a class="nav-link" href="#">7 Days to Die <span class="sr-only">(current)</span></a>
+							  	</li>
+							</ul>
+						</div>
+					</nav>
+
+					<div class="jumbotron mt-3 jumbotron-condensed">
+						<div id="alert_success" class="alert alert-success" role="alert" style="display: none;">
+							This is placeholder text
+						</div>
+						<div id="alert_error" class="alert alert-danger" role="alert" style="display: none;">
+							This is placeholder text
+						</div>
+						<div class="row">
+							<div class="col-sm">
+								<p class="h5">7 Days to Die [<img src="assets/credit.png" width="25" height="25" class="d-inline-block align-top">: 1000]</p>
+							</div>
+							<div class="col-sm">
+								
+							</div>
+						</div>
+						<table class="table table-dark table-condensed">
+							<thead>
+							  <tr>
+								<th scope="col">Action</th>
+								<th scope="col">Cost</th>
+								<th scope="col"></th>
+							  </tr>
+							</thead>
+							<tbody>
+							  <tr>
+								<td>Spawn Zombie <a href="#" onclick="showInfoDialog('Spawn Zombie', 'Spawn a zombie near Burke forcing him to either fight it or attempt to run away!')">[info]</a></td>
+								<td>1</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							  <tr>
+								<td>Weapon Drop <a href="#">[info]</a></td>
+								<td>5</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							  <tr>
+								<td>Ammo Drop <a href="#">[info]</a></td>
+								<td>5</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							  <tr>
+								<td>Regen <a href="#">[info]</a></td>
+								<td>3</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							  <tr>
+								<td>Fast <a href="#">[info]</a></td>
+								<td>3</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							  <tr>
+								<td>Slow <a href="#">[info]</a></td>
+								<td>3</td>
+								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
+							  </tr>
+							</tbody>
+						  </table>
+						  <button type="button" class="btn btn-xs btn-info">Previous</button>
+						  <button type="button" class="btn btn-xs btn-primary">Refresh</button>
+						  <button type="button" class="btn btn-xs btn-info">Next</button>
+					  </div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
