@@ -1,9 +1,10 @@
 const version = 1;
-const base_api = "https://burkeblack/extensions/game_interaction/api.php";
+const base_api = "https://burkeblack.tv/extensions/game_interaction/api.php";
 
 var current_page = 1;
 var current_game_id = 0;
 var panel_token;
+var actions = [];
 
 window.Twitch.ext.onAuthorized(function(auth) {
     panel_token = auth.token;
@@ -31,6 +32,33 @@ $(document).ready(function() {
     $('#pagination_next').click(function() {
         getNextActions();
     });
+    $(document).on('click', '.send-button', function () {
+        handleSendButton($(this).attr("id"));
+    });
+    $(document).on('click', '.info-link', function () {
+        handleInfoLink($(this).attr("id"));
+    });
+    $(document).on('click', '#modal-info-close-btn', function() {
+        $('#modal-info').modal('hide');
+    });
+    $(document).on('click', '#send-cancel', function() {
+        $('#modal-send').modal('hide');
+    });
+    $(document).on('click', '#modal-send-close-btn', function() {
+        $('#modal-send').modal('hide');
+    })
+    $(document).on('click', '#send-confirm', function() {
+        var actionCode = $('#modal-send-authcode').val();
+        var action = actions[actionCode];
+        sendAction(current_game_id, actionCode, action.cost);
+        $('#modal-send').modal('hide');
+    });
+    $(document).on('click', '#actions_ui_link', function() {
+        showActions();
+    });
+    $(document).on('click', '#credits_ui_link', function() {
+        showCredits();
+    });
 });
 
 function initializeConnector() {
@@ -56,14 +84,47 @@ function showAuthed() {
     $('#authed').show();
 }
 
-function showInfoDialog(title, description) {
-    $('#modal-info-title').html(title);
-    $('#modal-info-description').html(description);
-    $('#modal-info').modal("show");
+function showActions() {
+    $('#credits_ui').hide();
+    $('#actions_ui').show();
 }
 
-function closeInfoDialog() {
-    $('#modal-info').modal("hide");
+function showCredits() {
+    $('#credits_ui').show();
+    $('#actions_ui').hide();
+}
+
+function handleSendButton(btnId) {
+    // send_<action_id>_<action_code>
+    var parts = btnId.split("_");
+    parts.shift();
+    var actionId = parts[0];
+    parts.shift();
+    var actionCode = parts.join("_");
+
+    var action = actions[actionCode];
+    $('#modal-send-authcode').val(actionCode);
+    $('#modal-send-title').html('Action: ' + action.name);
+    $('#modal-send-description').html('You are about to send the action <b>' + action.name + '</b> for a cost of <b>' + action.cost + '</b> credits. Continue?');
+    $('#modal-send').modal('show');
+}
+
+function handleInfoLink(linkId) {
+    // info_<action_id>_<action_code>
+    var parts = linkId.split("_");
+    parts.shift();
+    var actionId = parts[0];
+    parts.shift();
+    var actionCode = parts.join("_");
+    $('#modal-send-title').html();
+    showInfoDialog(actionCode);
+}
+
+function showInfoDialog(actionCode) {
+    var action = actions[actionCode];
+    $('#modal-info-title').html(action.name);
+    $('#modal-info-description').html(action.description);
+    $('#modal-info').modal("show");
 }
 
 function alertSuccess(msg, global = false) {
@@ -88,6 +149,7 @@ function getGameActions(game_id) {
 }
 
 function getNextActions() {
+    setNext(false);
     current_page += 1;
     getGameActions(current_game_id);
 }
@@ -96,23 +158,21 @@ function getPrevActions() {
     if(current_page < 2) {
         return;
     }
+    setPrev(false);
     current_page -= 1;
     getGameActions(current_game_id);
 }
 
 function getGameActionsCallback(response) {
     var game_id = response.game_id;
-    var actions = response.actions;
     var hasPrevActions = response.has_prev_actions;
     var hasNextActions = response.has_next_actions;
     $('#actions').html("");
-    actions.forEach(action => {
-        var name = action.name.replace(/'/g, "\\'");
-        var description = action.description.replace(/'/g, "\\'");
-        var cost = action.cost; // we'll pass the cost so that if the cost changes without the user's knowledge, it will be rejected server side
+    response.actions.forEach(action => {
+        var cost = action.cost;
         var action_code = action.action_code;
-
-        var rowHtml = '<tr> <td>' + action.name + ' <a href="#" onclick="showInfoDialog(\'' + name + '\', \'' + description + '\')">[info]</a></td> <td>' + cost + '</td> <td><button type="button" class="btn btn-xs btn-success" onclick="sendAction(' + game_id + ',\'' + action_code + '\', \'' + cost + '\');">Send</button></td> </tr>';
+        actions[action_code] = action;
+        var rowHtml = '<tr> <td>' + action.name + ' <a id="info_' + action.id + '_' + action_code + '" class="info-link" href="#">[info]</a></td> <td>' + cost + '</td> <td><button id="send_' + action.id + '_' + action_code + '" type="button" class="send-button btn btn-xs btn-success">Send</button></td> </tr>';
         $('#actions').append(rowHtml);
     });
     setPrev(hasPrevActions);
@@ -139,8 +199,8 @@ function setNext(enabled) {
     }
 }
 
-function sendAction(game_id, action) {
-    getRequest("?action=send_action&game_id=" + game_id + "&action_name=" + action, sendActionCallback);
+function sendAction(game_id, action, cost) {
+    getRequest("?action=send_action&game_id=" + game_id + "&action_name=" + action + "&cost=" + cost, sendActionCallback);
 }
 
 function sendActionCallback(response) {
@@ -149,24 +209,30 @@ function sendActionCallback(response) {
     } else {
         alertError(response.message);
     }
+    refresh();
 }
 
 function refresh() {
-    getRequest("?action=refresh", getGameActionsCallback);
+    getRequest("?action=refresh", refreshCallback);
 }
 
 function refreshCallback(response) {
     var extTitle = response.title;
     var profilePicture = response.user.profile_picture;
-    var game = response.game;
+    var credits = response.user.credits;
+    var gameName = response.game.name;
+    var gameId = response.game.id;
 
     $('#ext_title').html(extTitle);
     $('#profile_picture').attr('src', profilePicture);
-    $('#game_name').html(game.name);
-    current_game_id = game.id;
+    $('#credit_count').html(credits);
+    $('#game_name').html(gameName);
+    $('#game_name_main').html(gameName);
+    current_game_id = gameId;
     $('#loading-spinner').hide();
     $('#landing').hide();
     $('#authed').show();
+    getGameActions(current_game_id);
 }
 
 function getRequest(params, callback) {

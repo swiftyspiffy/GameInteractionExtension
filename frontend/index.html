@@ -21,12 +21,32 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="modal-info-title"></h5>
-						<button type="button" class="close" onclick="closeInfoDialog();">
+						<button id="modal-info-close-btn" type="button" class="close" data-dismiss="modal-info" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
-						</button>
+						  </button>
 					</div>
 					<div class="modal-body">
 						<p id="modal-info-description"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" tabindex="-1" role="dialog" id="modal-send">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modal-send-title"></h5>
+						<button id="modal-send-close-btn" type="button" class="close" data-dismiss="modal-info" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						  </button>
+					</div>
+					<div class="modal-body">
+						<p id="modal-send-description"></p>
+					</div>
+					<input type="hidden" id="modal-send-authcode" value=""></input>
+					<div class="modal-footer">
+						<button id="send-cancel" type="button" class="btn btn-danger" data-dismiss="modal-send">Cancel</button>
+						<button id="send-confirm" type="button" class="btn btn-success" data-dismiss="modal-send">Send!</button>
 					</div>
 				</div>
 			</div>
@@ -59,17 +79,18 @@
 						<div class="collapse navbar-collapse" id="navbarSupportedContent">
 							<ul class="navbar-nav mr-auto">
 								<li class="nav-item active">
-									<a class="nav-link" href="#"><span id="game_name"></span> <span class="sr-only">(current)</span></a>
+									<a id="actions_ui_link" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show" class="nav-link" href="#"><span id="game_name"></span> <span class="sr-only">(current)</span></a>
+									<a id="credits_ui_link" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show" class="nav-link" href="#">Extension Credits</a>
 							  	</li>
 							</ul>
 						</div>
 					</nav>
 
-					<div class="jumbotron mt-3 jumbotron-condensed">
+					<div id="actions_ui" class="jumbotron mt-2 jumbotron-condensed">
 						<div id="alert-area"></div>
 						<div class="row">
 							<div class="col-sm">
-								<p class="h5"><span id="game_name"></span> [<img src="assets/credit.png" width="25" height="25" class="d-inline-block align-top">: 1000]</p>
+								<p class="h5"><span id="game_name_main"></span> [<img src="assets/credit.png" width="25" height="25" class="d-inline-block align-top">: <span id="credit_count"></span>]</p>
 							</div>
 							<div class="col-sm">
 								
@@ -84,42 +105,35 @@
 							  </tr>
 							</thead>
 							<tbody id="actions">
-							  <tr>
-								<td>Spawn Zombie Spawn Zombie <a href="#" onclick="showInfoDialog('Spawn Zombie', 'Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away! Spawn a zombie near Burke forcing him to either fight it or attempt to run away!')">[info]</a></td>
-								<td>1</td>
-								<td><button type="button" class="btn btn-xs btn-success" onclick="alertSuccess('Feels good man :)');">Send</button></td>
-							  </tr>
-							  <tr>
-								<td>Weapon Drop <a href="#">[info]</a></td>
-								<td>5</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
-							  </tr>
-							  <tr>
-								<td>Ammo Drop <a href="#">[info]</a></td>
-								<td>5</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
-							  </tr>
-							  <tr>
-								<td>Regen <a href="#">[info]</a></td>
-								<td>3</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
-							  </tr>
-							  <tr>
-								<td>Fast <a href="#">[info]</a></td>
-								<td>3</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
-							  </tr>
-							  <tr>
-								<td>Slow <a href="#">[info]</a></td>
-								<td>3</td>
-								<td><button type="button" class="btn btn-xs btn-success">Send</button></td>
-							  </tr>
 							</tbody>
 						  </table>
 						  <button id="pagination_prev" type="button" class="btn btn-xs btn-info disabled" disabled>Previous</button>
 						  <button id="refresh_ui" type="button" class="btn btn-xs btn-primary">Refresh</button>
 						  <button id="pagination_next" type="button" class="btn btn-xs btn-info">Next</button>
-					  </div>
+					</div>
+
+					<div id="credits_ui" class="jumbotron mt-2 jumbotron-condensed" style="display: none;">
+						<div class="row justify-content-center">
+							<p class="h5">Extension Credits</p>
+						</div>
+						<div class="row">
+							<p class="h6">This extension was developed by swiftyspiffy. 
+								<hr>
+								Feedback or suggestions? You can contact him via:
+							<ul>
+								<li>
+									Twitter: <b>@swiftyspiffy</b>
+								</li>
+								<li>
+									Twitch: <b>swiftyspiffy</b>
+								</li>
+								<li>
+									Discord: <b>swiftyspiffy#0001</b>
+								</li>
+							</ul>
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
