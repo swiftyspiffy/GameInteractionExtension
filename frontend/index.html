@@ -5,11 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
 		<script src="third_party/jquery-3.2.1.slim.min.js"></script>
+		<script src="third_party/popper.min.js"></script>
 
 		<link rel="stylesheet" href="third_party/bootstrap.min.css">
 		<script src="third_party/bootstrap.min.js"></script>
-
-		<script src="third_party/popper.min.js"></script>
 
 		<link href="style.css" rel="stylesheet">
 		<script src="script.js"></script>
@@ -95,6 +94,18 @@
 							<div class="col-sm">
 								
 							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm">
+								<div class="dropdown">
+									<button class="btn btn-xs btn-info dropdown-toggle w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									All
+									</button>
+									<div class="dropdown-menu" id="typeMenu" aria-labelledby="dropdownMenuButton">
+									</div>
+								</div>
+							</div>
+							
 						</div>
 						<table class="table table-dark table-condensed">
 							<thead>

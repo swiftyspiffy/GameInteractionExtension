@@ -3,6 +3,7 @@ const base_api = "https://burkeblack.tv/extensions/game_interaction/api.php";
 
 var current_page = 1;
 var current_game_id = 0;
+var current_type_id = 0;
 var panel_token;
 var actions = [];
 
@@ -59,10 +60,20 @@ $(document).ready(function() {
     $(document).on('click', '#credits_ui_link', function() {
         showCredits();
     });
+    $(document).on('click', '.type-selection', function() {
+        console.log("test");
+        handleTypeSelected($(this).attr("id"), $(this).text()); 
+    });
 });
 
 function initializeConnector() {
     window.Twitch.ext.actions.requestIdShare();
+}
+
+function handleTypeSelected(typeId, typeName) {
+    $('#dropdownMenuButton').html(typeName);
+    current_type_id = typeId;
+    getGameActions(current_game_id);
 }
 
 function showAuth() {
@@ -145,7 +156,7 @@ function newAlert (type, message, global = false) {
 }
 
 function getGameActions(game_id) {
-    getRequest("?action=get_actions&game_id=" + game_id + "&page=" + current_page, getGameActionsCallback);
+    getRequest("?action=get_actions&game_id=" + game_id + "&page=" + current_page + "&action_type_id=" + current_type_id, getGameActionsCallback);
 }
 
 function getNextActions() {
@@ -167,6 +178,7 @@ function getGameActionsCallback(response) {
     var game_id = response.game_id;
     var hasPrevActions = response.has_prev_actions;
     var hasNextActions = response.has_next_actions;
+    var types = response.types;
     $('#actions').html("");
     response.actions.forEach(action => {
         var cost = action.cost;
@@ -177,6 +189,7 @@ function getGameActionsCallback(response) {
     });
     setPrev(hasPrevActions);
     setNext(hasNextActions);
+    handleTypeLoading(types);
 }
 
 function setPrev(enabled) {
@@ -233,6 +246,14 @@ function refreshCallback(response) {
     $('#landing').hide();
     $('#authed').show();
     getGameActions(current_game_id);
+}
+
+function handleTypeLoading(types) {
+    var row = '<a class="dropdown-item w-100 type-selection" href="#" id="0">All</a>';
+    $('#typeMenu').html(row);
+    types.forEach(typeObj => {
+        $('#typeMenu a:last').after('<a class="dropdown-item w-100 type-selection" href="#" id="' + typeObj.id + '">' + typeObj.name + '</a>');
+    });
 }
 
 function getRequest(params, callback) {
