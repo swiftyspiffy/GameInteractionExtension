@@ -5,10 +5,13 @@ var current_page = 1;
 var current_game_id = 0;
 var current_type_id = 0;
 var panel_token;
+var helix_token;
 var actions = [];
 
 window.Twitch.ext.onAuthorized(function(auth) {
     panel_token = auth.token;
+	helix_token = auth.helixToken;
+	helix_client_id = getHelixClientId(helix_token);
     var sections = auth.token.split('.');
     payload = JSON.parse(window.atob(sections[1]));
     if(payload.user_id) {
@@ -18,6 +21,13 @@ window.Twitch.ext.onAuthorized(function(auth) {
         showAuth();
     }
 });
+
+function getHelixClientId(helixJwt) {
+	var payload = helixJwt.split(".")[1];
+	var json = JSON.parse(atob(payload));
+	return json.client_id;
+}
+
 
 $(document).ready(function() {
     platform = getPlatform(getUrlVars());
@@ -156,7 +166,7 @@ function newAlert (type, message, global = false) {
 }
 
 function getGameActions(game_id) {
-    getRequest("?action=get_actions&game_id=" + game_id + "&page=" + current_page + "&action_type_id=" + current_type_id, getGameActionsCallback);
+    getRequest("?action=get_actions&token=" + helix_token + "&game_id=" + game_id + "&page=" + current_page + "&action_type_id=" + current_type_id, getGameActionsCallback);
 }
 
 function getNextActions() {
@@ -213,7 +223,7 @@ function setNext(enabled) {
 }
 
 function sendAction(game_id, action, cost) {
-    getRequest("?action=send_action&game_id=" + game_id + "&action_name=" + action + "&cost=" + cost, sendActionCallback);
+    getRequest("?action=send_action&token=" + helix_token + "&game_id=" + game_id + "&action_name=" + action + "&cost=" + cost, sendActionCallback);
 }
 
 function sendActionCallback(response) {
@@ -226,7 +236,7 @@ function sendActionCallback(response) {
 }
 
 function refresh() {
-    getRequest("?action=refresh", refreshCallback);
+    getRequest("?action=refresh&token=" + helix_token, refreshCallback);
 }
 
 function refreshCallback(response) {
@@ -237,7 +247,7 @@ function refreshCallback(response) {
     var gameId = response.game.id;
 
     $('#ext_title').html(extTitle);
-    $('#profile_picture').attr('src', profilePicture);
+    $('#user_profile_picture').attr('src', profilePicture);
     $('#credit_count').html(credits);
     $('#game_name').html(gameName);
     $('#game_name_main').html(gameName);
