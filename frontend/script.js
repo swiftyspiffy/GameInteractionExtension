@@ -1,4 +1,4 @@
-const version = 1;
+const version = 2;
 const base_api = "https://burkeblack.tv/extensions/game_interaction/api.php";
 
 var current_page = 1;
