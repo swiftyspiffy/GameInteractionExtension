@@ -4,11 +4,11 @@ This extension is used to make user-friendly API calls to BurkeBlack.tv for inte
 
 ### Change log
 
-##### v2
+##### v3
 - allow listing remote endpoints on burkeblack.tv
 
-##### v1
+##### v2
 - allow remote changes on name, etc
 
-##### v0
+##### v1
 - initial release
