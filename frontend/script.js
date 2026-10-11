@@ -1,4 +1,4 @@
-const version = 3;
+const version = 4;
 const base_api = "https://burkeblack.tv/extensions/game_interaction/api.php";
 
 var current_page = 1;
@@ -8,29 +8,44 @@ var panel_token;
 var helix_token;
 var actions = [];
 
-window.Twitch.ext.onAuthorized(function(auth) {
+var platform = 'not_set';
+var identityScope = '';
+var authGeneration = 0;
+var actionInFlight = false;
+var pendingAction = null;
+
+function authorize(auth) {
+    authGeneration += 1;
     panel_token = auth.token;
-	helix_token = auth.helixToken;
-	helix_client_id = getHelixClientId(helix_token);
-    var sections = auth.token.split('.');
-    payload = JSON.parse(window.atob(sections[1]));
-    if(payload.user_id) {
-        refresh();
+    helix_token = auth.helixToken;
+    try {
+        const encoded = auth.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, '=')));
+        // This only chooses the UI. The backend verifies both credentials.
+        if (!/^[0-9]{1,20}$/.test(payload.user_id || '') || !helix_token) throw new Error('Identity not shared');
+        identityScope = 'game-action:' + auth.channelId + ':' + payload.user_id;
+        try { pendingAction = JSON.parse(sessionStorage.getItem(identityScope) || 'null'); }
+        catch (_) { pendingAction = {unreadable: true}; }
         showAuthing();
-    } else {
+        showPendingAction();
+        refresh();
+    } catch (_) {
+        identityScope = '';
+        pendingAction = null;
         showAuth();
     }
-});
-
-function getHelixClientId(helixJwt) {
-	var payload = helixJwt.split(".")[1];
-	var json = JSON.parse(atob(payload));
-	return json.client_id;
 }
-
 
 $(document).ready(function() {
     platform = getPlatform(getUrlVars());
+    window.Twitch.ext.onAuthorized(authorize);
+    $('#review-pending-action').click(function() {
+        if (actionInFlight || !identityScope) return;
+        try { sessionStorage.removeItem(identityScope); } catch (_) { return; }
+        pendingAction = null;
+        showPendingAction();
+        refresh();
+    });
     $('#login-button').click(function() {
         window.Twitch.ext.actions.requestIdShare();
     });
@@ -61,6 +76,7 @@ $(document).ready(function() {
     $(document).on('click', '#send-confirm', function() {
         var actionCode = $('#modal-send-authcode').val();
         var action = actions[actionCode];
+        if (!action) return;
         sendAction(current_game_id, actionCode, action.cost);
         $('#modal-send').modal('hide');
     });
@@ -71,7 +87,6 @@ $(document).ready(function() {
         showCredits();
     });
     $(document).on('click', '.type-selection', function() {
-        console.log("test");
         handleTypeSelected($(this).attr("id"), $(this).text()); 
     });
 });
@@ -81,7 +96,8 @@ function initializeConnector() {
 }
 
 function handleTypeSelected(typeId, typeName) {
-    $('#dropdownMenuButton').html(typeName);
+    $('#dropdownMenuButton').text(typeName);
+    current_page = 1;
     current_type_id = typeId;
     getGameActions(current_game_id);
 }
@@ -125,8 +141,9 @@ function handleSendButton(btnId) {
 
     var action = actions[actionCode];
     $('#modal-send-authcode').val(actionCode);
-    $('#modal-send-title').html('Action: ' + action.name);
-    $('#modal-send-description').html('You are about to send the action <b>' + action.name + '</b> for a cost of <b>' + action.cost + '</b> credits. Continue?');
+    if (!action || pendingAction || actionInFlight) return;
+    $('#modal-send-title').text('Action: ' + action.name);
+    $('#modal-send-description').text('Send ' + action.name + ' for ' + action.cost + ' credits?');
     $('#modal-send').modal('show');
 }
 
@@ -143,30 +160,31 @@ function handleInfoLink(linkId) {
 
 function showInfoDialog(actionCode) {
     var action = actions[actionCode];
-    $('#modal-info-title').html(action.name);
-    $('#modal-info-description').html(action.description);
+    if (!action) return;
+    $('#modal-info-title').text(action.name);
+    $('#modal-info-description').text(action.description);
     $('#modal-info').modal("show");
 }
 
 function alertSuccess(msg, global = false) {
-    newAlert('success', msg);
+    newAlert('success', msg, global);
 }
 
 function alertError(msg, global = false) {
-    newAlert('danger', msg);
+    newAlert('danger', msg, global);
 }
 
-function newAlert (type, message, global = false) {
-    var id = "alert-area";
-    if (global) { id = "alert-area-global"; }
-    $("#" + id).append($('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert"><span>' + message + '</span><button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> </div>'));
-    setTimeout(function() {
-        $(".alert").alert('close');
-    }, 4000);
+function newAlert(type, message, global = false) {
+    const area = global ? '#alert-area-global' : '#alert-area';
+    const alert = $('<div class="alert alert-dismissible fade show" role="alert"></div>').addClass('alert-' + type);
+    alert.append($('<span></span>').text(String(message || 'Request unavailable.')));
+    alert.append('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+    $(area).append(alert);
+    if (type === 'success') setTimeout(function() { alert.alert('close'); }, 4000);
 }
 
 function getGameActions(game_id) {
-    getRequest("?action=get_actions&token=" + helix_token + "&game_id=" + game_id + "&page=" + current_page + "&action_type_id=" + current_type_id, getGameActionsCallback);
+    return apiRequest('GET', {action: 'get_actions', game_id, page: current_page, action_type_id: current_type_id}, getGameActionsCallback);
 }
 
 function getNextActions() {
@@ -190,13 +208,20 @@ function getGameActionsCallback(response) {
     var hasNextActions = response.has_next_actions;
     var types = response.types;
     $('#actions').html("");
+    actions = [];
     response.actions.forEach(action => {
-        var cost = action.cost;
-        var action_code = action.action_code;
-        actions[action_code] = action;
-        var rowHtml = '<tr> <td>' + action.name + ' <a id="info_' + action.id + '_' + action_code + '" class="info-link" href="#">[info]</a></td> <td>' + cost + '</td> <td><button id="send_' + action.id + '_' + action_code + '" type="button" class="send-button btn btn-xs btn-success">Send</button></td> </tr>';
-        $('#actions').append(rowHtml);
+        const code = String(action.action_code);
+        const id = String(action.id);
+        if (!/^[0-9]+$/.test(code) || !/^[0-9]+$/.test(id)) return;
+        actions[code] = action;
+        const row = $('<tr></tr>');
+        const label = $('<td></td>').text(action.name + ' ');
+        label.append($('<a class="info-link" href="#">[info]</a>').attr('id', 'info_' + id + '_' + code));
+        row.append(label, $('<td></td>').text(action.cost), $('<td></td>').append(
+            $('<button type="button" class="send-button btn btn-xs btn-success">Send</button>').attr('id', 'send_' + id + '_' + code)));
+        $('#actions').append(row);
     });
+    showPendingAction();
     setPrev(hasPrevActions);
     setNext(hasNextActions);
     handleTypeLoading(types);
@@ -222,21 +247,50 @@ function setNext(enabled) {
     }
 }
 
-function sendAction(game_id, action, cost) {
-    getRequest("?action=send_action&token=" + helix_token + "&game_id=" + game_id + "&action_name=" + action + "&cost=" + cost, sendActionCallback);
+function showPendingAction() {
+    $('.send-button, #send-confirm').prop('disabled', actionInFlight || !!pendingAction);
+    $('#pending-action').toggle(!!pendingAction);
+    $('#review-pending-action').prop('disabled', actionInFlight);
+    $('#pending-action-message').text(actionInFlight ? 'Sending action. Please wait.' :
+        'The previous action may have run. Check the game and your credits before sending another. Refreshing will not resend it.');
 }
 
-function sendActionCallback(response) {
-    if(response.successful) {
-        alertSuccess(response.message);
-    } else {
-        alertError(response.message);
+async function sendAction(game_id, action, cost) {
+    if (actionInFlight || pendingAction || !identityScope) return;
+    const scope = identityScope;
+    const bytes = new Uint8Array(16);
+    const intent = {action: 'send_action', game_id, action_name: action, cost};
+    try {
+        crypto.getRandomValues(bytes);
+        intent.request_id = Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+        sessionStorage.setItem(scope, JSON.stringify(intent));
+        if (sessionStorage.getItem(scope) !== JSON.stringify(intent)) throw new Error('Storage unavailable');
+    } catch (_) {
+        alertError('This browser cannot retain the pending request. Allow extension storage before sending actions.');
+        return;
     }
+    pendingAction = intent;
+    actionInFlight = true;
+    showPendingAction();
+    const result = await apiRequest('POST', intent);
+    // Network/server failures and duplicate reservations can have an unknown
+    // delivery outcome. Keep the intent; never resend it automatically.
+    const confirmed = result && [200, 400, 401, 403, 404, 405, 413, 415, 422, 429].includes(result.status);
+    if (confirmed) {
+        try { sessionStorage.removeItem(scope); } catch (_) { /* keep review state if persistence fails */ }
+    }
+    actionInFlight = false;
+    if (scope !== identityScope) { showPendingAction(); return; }
+    if (confirmed) {
+        try { pendingAction = JSON.parse(sessionStorage.getItem(scope) || 'null'); } catch (_) { /* review required */ }
+    }
+    showPendingAction();
+    if (result && result.data.successful) alertSuccess(result.data.message.message || 'Action accepted.');
     refresh();
 }
 
 function refresh() {
-    getRequest("?action=refresh&token=" + helix_token, refreshCallback);
+    return apiRequest('POST', {action: 'refresh'}, refreshCallback);
 }
 
 function refreshCallback(response) {
@@ -246,11 +300,11 @@ function refreshCallback(response) {
     var gameName = response.game.name;
     var gameId = response.game.id;
 
-    $('#ext_title').html(extTitle);
+    $('#ext_title').text(extTitle);
     $('#user_profile_picture').attr('src', profilePicture);
-    $('#credit_count').html(credits);
-    $('#game_name').html(gameName);
-    $('#game_name_main').html(gameName);
+    $('#credit_count').text(credits);
+    $('#game_name').text(gameName);
+    $('#game_name_main').text(gameName);
     current_game_id = gameId;
     $('#loading-spinner').hide();
     $('#landing').hide();
@@ -259,34 +313,44 @@ function refreshCallback(response) {
 }
 
 function handleTypeLoading(types) {
-    var row = '<a class="dropdown-item w-100 type-selection" href="#" id="0">All</a>';
-    $('#typeMenu').html(row);
-    types.forEach(typeObj => {
-        $('#typeMenu a:last').after('<a class="dropdown-item w-100 type-selection" href="#" id="' + typeObj.id + '">' + typeObj.name + '</a>');
+    $('#typeMenu').empty().append('<a class="dropdown-item w-100 type-selection" href="#" id="0">All</a>');
+    types.forEach(type => {
+        if (/^[0-9]+$/.test(String(type.id))) $('#typeMenu').append(
+            $('<a class="dropdown-item w-100 type-selection" href="#"></a>').attr('id', type.id).text(type.name));
     });
 }
 
-function getRequest(params, callback) {
-    $.get({
-        url: base_api + params, 
-        type: 'GET',
-        headers: {
-            "x-extension-jwt": panel_token,
-            accept: "application/json",
-            version: version,
-            platform: platform,
-        },
-        success: function(data){
-            if (data.successful) {
-                callback(data.message);
-            } else {
-                alertError(data.message);
+async function apiRequest(method, fields, callback) {
+    const generation = authGeneration;
+    const params = new URLSearchParams(fields);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+        const response = await fetch(base_api + (method === 'GET' ? '?' + params.toString() : ''), {
+            method, credentials: 'omit', cache: 'no-store', redirect: 'error', signal: controller.signal,
+            headers: {'X-Extension-Jwt': panel_token, 'X-Helix-Token': helix_token,
+                'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded',
+                'Version': String(version), 'Platform': platform},
+            body: method === 'POST' ? params.toString() : undefined
+        });
+        const data = await response.json();
+        if (!data || typeof data.successful !== 'boolean' || typeof data.message === 'undefined') throw new Error('Invalid response');
+        if (generation === authGeneration) {
+            if (response.ok && data.successful && callback) callback(data.message);
+            else if (!response.ok || !data.successful) {
+                $('#loading-spinner').hide();
+                if (fields.action !== 'send_action' || response.status < 500 && response.status !== 409)
+                    alertError(typeof data.message === 'string' ? data.message : 'Request unavailable.', true);
             }
-        },
-        error: function(data) {
-            alertError("Server returned an invalid response!", true);
         }
-    });
+        return {status: response.status, data};
+    } catch (_) {
+        if (generation === authGeneration) {
+            $('#loading-spinner').hide();
+            if (fields.action !== 'send_action') alertError('Unable to load game interaction. Please try Refresh again.', true);
+        }
+        return null;
+    } finally { clearTimeout(timeout); }
 }
 
 // source: https://stackoverflow.com/questions/4656843/jquery-get-querystring-from-url
