@@ -5,7 +5,7 @@ import zipfile
 
 root = Path(__file__).resolve().parents[1]
 source = root / 'frontend'
-destination = root / 'dist/game-interaction-client-4.zip'
+destination = root / 'dist/game-interaction-client-5.zip'
 destination.parent.mkdir(exist_ok=True)
 with zipfile.ZipFile(destination, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
     for file in sorted(source.rglob('*')):
