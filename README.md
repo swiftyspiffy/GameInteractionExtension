@@ -31,7 +31,8 @@ game actions for automated tests. Mobile (320px) and desktop (800px) views and
 uncertain-delivery recovery were checked in a browser with synthetic responses.
 
 Run `python3 tools/package.py` to produce `dist/game-interaction-client-4.zip`.
-The archive contains only hosted frontend assets, with `index.html` at its root.
+The archive contains only hosted frontend assets, with `index.html` and
+`config.html` at its root.
 It excludes developer metadata and credentials. A source push does not publish
 this extension to Twitch.
 
@@ -49,3 +50,55 @@ Publish `dist/game-interaction-client-4.zip` through the existing extension in
 the Twitch Developer Console. Keep the current hosted package available for
 recovery. Publication, signed viewer rendering, and real game effects still
 need verification; a source push does not complete that transition.
+
+## Twitch hosting settings
+
+The Twitch Console release number (for example, `0.0.5`) is separate from the
+client/API protocol revision `4`. Use the prepared ZIP for the new console
+version without changing its protocol header.
+
+- Panel Viewer Path: `index.html`
+- Mobile Path: `index.html`
+- Config Path: `config.html`
+- Panel Height: `500`
+- Live Config Path: empty
+
+These paths are relative to the ZIP root: do not prefix them with `frontend/`.
+The configuration page makes no backend requests and has no settings to save.
+Keep mobile enabled and use this public Privacy Policy URL in Version Details:
+
+https://github.com/swiftyspiffy/GameInteractionExtension#privacy-notice
+
+After uploading, use Hosted Test to check configuration, Twitch identity sharing,
+catalog navigation, and mobile rendering before requesting review. A live game
+action requires a running supported game integration; catalog rendering alone
+does not verify that effect.
+
+## Privacy notice
+
+Last updated: October 12, 2026.
+
+Game Interactions is a Twitch extension developed by swiftyspiffy.
+
+### Information we use
+
+We use your Twitch user ID, username, profile image and channel information to
+sign you in, display your credits and process game interactions. We keep account,
+credit and activity records to operate the extension. We do not ask for your
+Twitch password or payment details.
+
+### Storage and sharing
+
+Your account records are stored on our servers. Your browser also remembers
+pending actions to help prevent duplicate requests. Twitch and our hosting
+providers help deliver the service. Your username may appear with an action in
+the connected game or stream.
+
+### Your choices
+
+You can stop using the extension or revoke identity sharing through Twitch.
+Removing the extension does not automatically delete existing account records.
+For privacy questions or requests to access, correct or delete your data,
+contact **swiftyspiffy@gmail.com**.
+
+We will update the date above when this notice changes.

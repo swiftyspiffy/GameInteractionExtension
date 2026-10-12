@@ -21,5 +21,9 @@ with zipfile.ZipFile(destination, 'w', compression=zipfile.ZIP_DEFLATED) as arch
         archive.writestr(info, file.read_bytes())
 with zipfile.ZipFile(destination) as archive:
     assert archive.testzip() is None
-    assert 'index.html' in archive.namelist() and 'script.js' in archive.namelist()
+    for required in ('index.html', 'config.html', 'config.css', 'script.js'):
+        assert required in archive.namelist(), 'Missing hosted asset: ' + required
+    for file in source.rglob('*'):
+        if file.is_file():
+            assert archive.read(file.relative_to(source).as_posix()) == file.read_bytes()
 print(destination.name, hashlib.sha256(destination.read_bytes()).hexdigest())
