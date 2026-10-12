@@ -67,7 +67,7 @@ These paths are relative to the ZIP root: do not prefix them with `frontend/`.
 The configuration page makes no backend requests and has no settings to save.
 Keep mobile enabled and use this public Privacy Policy URL in Version Details:
 
-https://github.com/swiftyspiffy/GameInteractionExtension#privacy-notice
+https://burkeblack.tv/gameinteractions/privacy-policy.html
 
 After uploading, use Hosted Test to check configuration, Twitch identity sharing,
 catalog navigation, and mobile rendering before requesting review. A live game
@@ -76,29 +76,4 @@ does not verify that effect.
 
 ## Privacy notice
 
-Last updated: October 12, 2026.
-
-Game Interactions is a Twitch extension developed by swiftyspiffy.
-
-### Information we use
-
-We use your Twitch user ID, username, profile image and channel information to
-sign you in, display your credits and process game interactions. We keep account,
-credit and activity records to operate the extension. We do not ask for your
-Twitch password or payment details.
-
-### Storage and sharing
-
-Your account records are stored on our servers. Your browser also remembers
-pending actions to help prevent duplicate requests. Twitch and our hosting
-providers help deliver the service. Your username may appear with an action in
-the connected game or stream.
-
-### Your choices
-
-You can stop using the extension or revoke identity sharing through Twitch.
-Removing the extension does not automatically delete existing account records.
-For privacy questions or requests to access, correct or delete your data,
-contact **swiftyspiffy@gmail.com**.
-
-We will update the date above when this notice changes.
+Read the [Game Interactions privacy policy](https://burkeblack.tv/gameinteractions/privacy-policy.html) on burkeblack.tv.
