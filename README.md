@@ -38,9 +38,14 @@ this extension to Twitch.
 The existing developer metadata identifies **Burke's Game Interaction**, client
 ID `46j5wbrm3pdnwprnsvcomfq3p6b07m`. Revision4 here is the client protocol revision;
 it does not choose or change the Twitch Developer Console release version.
-Before publishing, deploy the Go/website game API migration and securely configure
-its existing client ID and extension secret in
-`KRAKEN_LEGACY_WEBSITE_GAME_INTERACTION_JSON`. The setting is independent of
-Burke's Booty. Credentials are currently unset; the new API fails closed until
-configured. Keep the existing hosted assets until the backend and configuration
-are ready. Publication and real signed game effects still need verification.
+The Go/website game API and its existing credential configuration were deployed
+and verified on October 12, 2026 (UTC). The credential is held in
+`KRAKEN_LEGACY_WEBSITE_GAME_INTERACTION_JSON`, independently of Burke's Booty;
+no credential was added to this client package. All 88 backend configuration,
+read, and rejected-request checks passed without submitting a game action.
+The Twitch metadata currently names this extension **Game Interactions**.
+
+Publish `dist/game-interaction-client-4.zip` through the existing extension in
+the Twitch Developer Console. Keep the current hosted package available for
+recovery. Publication, signed viewer rendering, and real game effects still
+need verification; a source push does not complete that transition.
